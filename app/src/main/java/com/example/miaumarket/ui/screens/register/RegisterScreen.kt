@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
@@ -12,13 +13,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.miaumarket.R
 import com.example.miaumarket.ui.AuthState
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun RegisterScreen(
@@ -57,6 +64,7 @@ fun RegisterScreen(
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun RegisterContent(
     firstName: String,
     onFirstNameChange: (String) -> Unit,
@@ -72,6 +80,34 @@ fun RegisterContent(
     onRegisterClick: () -> Unit,
     onNavigateToLogin: () -> Unit
 ) {
+    var showBirthDatePicker by remember { mutableStateOf(false) }
+
+    if (showBirthDatePicker) {
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = birthDate.toDateMillisOrNull())
+        DatePickerDialog(
+            onDismissRequest = { showBirthDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { selectedMillis ->
+                            onBirthDateChange(selectedMillis.toDisplayDate())
+                        }
+                        showBirthDatePicker = false
+                    }
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBirthDatePicker = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
     Scaffold { paddingValues ->
         Box(
             modifier = Modifier
@@ -87,13 +123,13 @@ fun RegisterContent(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "MiauMarket",
+                    text = stringResource(R.string.app_name),
                     style = MaterialTheme.typography.displayMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
 
                 Text(
-                    text = "Join our community of cat lovers!",
+                    text = stringResource(R.string.join_community),
                     style = MaterialTheme.typography.bodyLarge
                 )
 
@@ -102,7 +138,7 @@ fun RegisterContent(
                 OutlinedTextField(
                     value = firstName,
                     onValueChange = onFirstNameChange,
-                    label = { Text("First Name") },
+                    label = { Text(stringResource(R.string.first_name)) },
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                     singleLine = true
@@ -111,7 +147,7 @@ fun RegisterContent(
                 OutlinedTextField(
                     value = lastName,
                     onValueChange = onLastNameChange,
-                    label = { Text("Last Name") },
+                    label = { Text(stringResource(R.string.last_name)) },
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                     singleLine = true
@@ -120,16 +156,26 @@ fun RegisterContent(
                 OutlinedTextField(
                     value = birthDate,
                     onValueChange = onBirthDateChange,
-                    label = { Text("Birth Date (YYYY-MM-DD)") },
+                    label = { Text(stringResource(R.string.birth_date)) },
+                    placeholder = { Text(stringResource(R.string.birth_date_placeholder)) },
                     modifier = Modifier.fillMaxWidth(),
-                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) },
+                    trailingIcon = {
+                        IconButton(onClick = { showBirthDatePicker = true }) {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = stringResource(R.string.select_birth_date)
+                            )
+                        }
+                    },
+                    readOnly = true,
                     singleLine = true
                 )
 
                 OutlinedTextField(
                     value = email,
                     onValueChange = onEmailChange,
-                    label = { Text("Email") },
+                    label = { Text(stringResource(R.string.email)) },
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -140,7 +186,7 @@ fun RegisterContent(
                 OutlinedTextField(
                     value = password,
                     onValueChange = onPasswordChange,
-                    label = { Text("Password") },
+                    label = { Text(stringResource(R.string.password)) },
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                     trailingIcon = {
@@ -156,7 +202,7 @@ fun RegisterContent(
 
                 if (authState is AuthState.Error) {
                     Text(
-                        text = (authState as AuthState.Error).message,
+                        text = authState.message,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -174,16 +220,34 @@ fun RegisterContent(
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text("Register")
+                        Text(stringResource(R.string.register))
                     }
                 }
 
                 TextButton(onClick = onNavigateToLogin) {
-                    Text("Already have an account? Login here")
+                    Text(stringResource(R.string.login_here_cta))
                 }
             }
         }
     }
+}
+
+private val displayBirthDateFormatter = DateTimeFormatter.ofPattern("dd/MM/uuuu")
+
+private fun String.toDateMillisOrNull(): Long? {
+    return runCatching {
+        LocalDate.parse(trim(), displayBirthDateFormatter)
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+    }.getOrNull()
+}
+
+private fun Long.toDisplayDate(): String {
+    return Instant.ofEpochMilli(this)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
+        .format(displayBirthDateFormatter)
 }
 
 @Preview(showBackground = true)

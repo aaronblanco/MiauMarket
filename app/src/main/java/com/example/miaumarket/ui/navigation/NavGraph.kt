@@ -1,7 +1,6 @@
 package com.example.miaumarket.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -11,6 +10,7 @@ import com.example.miaumarket.ui.screens.login.LoginScreen
 import com.example.miaumarket.ui.screens.login.LoginViewModel
 import com.example.miaumarket.ui.screens.register.RegisterScreen
 import com.example.miaumarket.ui.screens.register.RegisterViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -53,8 +53,8 @@ fun NavGraph(
             RegisterScreen(
                 viewModel = viewModel,
                 onRegisterSuccess = {
-                    navController.navigate(LoginRoute) {
-                        popUpTo(RegisterRoute) { inclusive = true }
+                    navController.navigate(CatalogRoute) {
+                        popUpTo(LoginRoute) { inclusive = true }
                     }
                 },
                 onNavigateToLogin = {

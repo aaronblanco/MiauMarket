@@ -41,13 +41,6 @@ class ProductViewModel @Inject constructor(
         loadProducts()
     }
 
-    fun loadNextPage() {
-        if (!_isLoading.value && !isLastPage) {
-            currentPage++
-            loadProducts()
-        }
-    }
-
     private fun resetPagination() {
         currentPage = 1
         isLastPage = false
@@ -63,7 +56,7 @@ class ProductViewModel @Inject constructor(
                 _products.value += response.items
                 isLastPage = response.items.size < 20
             }.onFailure { e ->
-                _error.value = e.message ?: "Failed to load products"
+                _error.value = e.message ?: "No se han podido cargar los productos"
             }
             _isLoading.value = false
         }
@@ -79,7 +72,7 @@ class ProductViewModel @Inject constructor(
             result.onSuccess { product ->
                 _selectedProduct.value = product
             }.onFailure { e ->
-                _error.value = e.message ?: "Failed to load product details"
+                _error.value = e.message ?: "No se han podido cargar los detalles del producto"
             }
             _isLoading.value = false
         }

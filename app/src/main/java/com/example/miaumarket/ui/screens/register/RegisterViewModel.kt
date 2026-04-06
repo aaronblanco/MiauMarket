@@ -2,8 +2,8 @@ package com.example.miaumarket.ui.screens.register
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.miaumarket.data.remote.dto.LoginRequest
 import com.example.miaumarket.data.remote.dto.RegisterRequest
-import com.example.miaumarket.data.remote.dto.UserResponse
 import com.example.miaumarket.domain.repository.AuthRepository
 import com.example.miaumarket.ui.AuthState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,14 +11,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    private val _authState = MutableStateFlow<AuthState<UserResponse>>(AuthState.Idle)
-    val authState: StateFlow<AuthState<UserResponse>> = _authState
+    private val _authState = MutableStateFlow<AuthState<String>>(AuthState.Idle)
+    val authState: StateFlow<AuthState<String>> = _authState
 
     var firstName = MutableStateFlow("")
     var lastName = MutableStateFlow("")
@@ -32,9 +35,15 @@ class RegisterViewModel @Inject constructor(
         val bDate = birthDate.value
         val mail = email.value
         val pass = password.value
+        val isoBirthDate = bDate.toIsoBirthDate()
 
         if (fName.isBlank() || lName.isBlank() || bDate.isBlank() || mail.isBlank() || pass.isBlank()) {
-            _authState.value = AuthState.Error("Please fill all fields")
+            _authState.value = AuthState.Error("Rellena todos los campos")
+            return
+        }
+
+        if (isoBirthDate == null) {
+            _authState.value = AuthState.Error("Selecciona una fecha de nacimiento válida")
             return
         }
 
@@ -44,16 +53,33 @@ class RegisterViewModel @Inject constructor(
                 RegisterRequest(
                     firstName = fName,
                     lastName = lName,
-                    birthDate = bDate,
+                    birthDate = isoBirthDate,
                     email = mail,
                     password = pass
                 )
             )
-            result.onSuccess { user ->
-                _authState.value = AuthState.Success(user)
+            result.onSuccess {
+                authRepository.login(LoginRequest(mail, pass))
+                    .onSuccess { token ->
+                        _authState.value = AuthState.Success(token)
+                    }
+                    .onFailure { error ->
+                        _authState.value = AuthState.Error(error.message ?: "Te has registrado correctamente, pero no se ha podido iniciar sesión automáticamente")
+                    }
             }.onFailure { error ->
-                _authState.value = AuthState.Error(error.message ?: "Registration failed")
+                _authState.value = AuthState.Error(error.message ?: "No se ha podido completar el registro")
             }
         }
     }
 }
+
+private val displayBirthDateFormatter = DateTimeFormatter.ofPattern("dd/MM/uuuu")
+
+private fun String.toIsoBirthDate(): String? {
+    return try {
+        LocalDate.parse(trim(), displayBirthDateFormatter).format(DateTimeFormatter.ISO_LOCAL_DATE)
+    } catch (_: DateTimeParseException) {
+        null
+    }
+}
+

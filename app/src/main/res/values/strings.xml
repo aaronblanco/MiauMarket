@@ -1,3 +1,36 @@
 <resources>
     <string name="app_name">MiauMarket</string>
+    <string name="welcome_back">¡Bienvenido de nuevo, amigo felino!</string>
+    <string name="join_community">¡Únete a nuestra comunidad de amantes de los gatos!</string>
+    <string name="first_name">Nombre</string>
+    <string name="last_name">Apellidos</string>
+    <string name="birth_date">Fecha de nacimiento (AAAA-MM-DD)</string>
+    <string name="birth_date_placeholder">dd/MM/aaaa</string>
+    <string name="select_birth_date">Seleccionar fecha de nacimiento</string>
+    <string name="confirm">Confirmar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="email">Correo electrónico</string>
+    <string name="password">Contraseña</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="register">Registrarse</string>
+    <string name="login_here_cta">¿Ya tienes cuenta? Inicia sesión aquí</string>
+    <string name="register_here_cta">¿No tienes cuenta? Regístrate aquí</string>
+    <string name="search_placeholder">Busca artículos para tu gato…</string>
+    <string name="catalog_title">MiauMarket</string>
+    <string name="details_title">Detalles de MiauMarket</string>
+    <string name="back">Atrás</string>
+    <string name="login_icon_cd">Ir a inicio de sesión</string>
+    <string name="open_in_store">Abrir en la tienda</string>
+    <string name="source_label">Fuente: %1$s</string>
+    <string name="product_not_found">Producto no encontrado</string>
+    <string name="no_products_available">No hay productos disponibles</string>
+    <string name="no_products_found_for_query">No se han encontrado productos para &quot;%1$s&quot;</string>
+    <string name="please_enter_credentials">Introduce tu correo electrónico y tu contraseña</string>
+    <string name="unknown_error">Se ha producido un error desconocido</string>
+    <string name="please_fill_all_fields">Rellena todos los campos</string>
+    <string name="invalid_birth_date">Selecciona una fecha de nacimiento válida</string>
+    <string name="registration_failed">No se ha podido completar el registro</string>
+    <string name="registration_login_failed">Te has registrado correctamente, pero no se ha podido iniciar sesión automáticamente</string>
+    <string name="failed_to_load_products">No se han podido cargar los productos</string>
+    <string name="failed_to_load_product_details">No se han podido cargar los detalles del producto</string>
 </resources>

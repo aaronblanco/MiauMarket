@@ -26,19 +26,23 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun register(request: RegisterRequest): Result<UserResponse> {
+    override suspend fun register(request: RegisterRequest): Result<Unit> {
         return try {
             val response = authApi.register(request)
-            Result.success(response)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(IllegalStateException("HTTP ${response.code()}"))
+            }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(IllegalStateException("No se ha podido completar el registro", e))
         }
     }
 
     override suspend fun logout() {
         try {
             authApi.logout()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // Log error or handle failure if necessary, but proceed to clear token locally
         } finally {
             sessionManager.clearToken()

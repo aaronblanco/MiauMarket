@@ -13,12 +13,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.miaumarket.R
 import com.example.miaumarket.data.remote.dto.ProductResponse
 import com.example.miaumarket.ui.theme.MiauMarketTheme
 
@@ -58,7 +60,7 @@ fun CatalogContent(
             TopAppBar(
                 title = {
                     Text(
-                        text = "MiauMarket",
+                        text = stringResource(R.string.app_name),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -67,7 +69,7 @@ fun CatalogContent(
                     IconButton(onClick = onNavigateToLogin) {
                         Icon(
                             imageVector = Icons.Default.Person,
-                            contentDescription = "Login"
+                            contentDescription = stringResource(R.string.login_icon_cd)
                         )
                     }
                 }
@@ -87,7 +89,7 @@ fun CatalogContent(
                         onSearch = { },
                         expanded = false,
                         onExpandedChange = { },
-                        placeholder = { Text("Search cat goodies...") },
+                        placeholder = { Text(stringResource(R.string.search_placeholder)) },
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) }
                     )
                 },
@@ -104,8 +106,13 @@ fun CatalogContent(
                 if (products.isEmpty() && isLoading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 } else if (products.isEmpty()) {
+                    val emptyMessage = if (searchQuery.isBlank()) {
+                        stringResource(R.string.no_products_available)
+                    } else {
+                        stringResource(R.string.no_products_found_for_query, searchQuery)
+                    }
                     Text(
-                        text = if (searchQuery.isBlank()) "No products available" else "No products found for '$searchQuery'",
+                        text = emptyMessage,
                         modifier = Modifier.align(Alignment.Center),
                         style = MaterialTheme.typography.bodyLarge
                     )

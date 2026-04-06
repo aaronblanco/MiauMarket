@@ -1,7 +1,6 @@
 package com.example.miaumarket.ui.screens.catalog
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -14,10 +13,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.core.net.toUri
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.miaumarket.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,10 +39,10 @@ fun ProductDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Miau Details") },
+                title = { Text(stringResource(R.string.details_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -83,7 +85,7 @@ fun ProductDetailScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         if (product.source != null) {
                             Text(
-                                text = "Source: ${product.source}",
+                                text = stringResource(R.string.source_label, product.source),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -91,7 +93,7 @@ fun ProductDetailScreen(
                         Button(
                             onClick = {
                                 product.sourceUrl?.let {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it))
+                                    val intent = Intent(Intent.ACTION_VIEW, it.toUri())
                                     context.startActivity(intent)
                                 }
                             },
@@ -101,13 +103,13 @@ fun ProductDetailScreen(
                         ) {
                             Icon(Icons.Default.ShoppingCart, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Open in Store")
+                            Text(stringResource(R.string.open_in_store))
                         }
                     }
                 }
             } else {
                 Text(
-                    text = "Product not found",
+                    text = stringResource(R.string.product_not_found),
                     modifier = Modifier.align(Alignment.Center)
                 )
             }

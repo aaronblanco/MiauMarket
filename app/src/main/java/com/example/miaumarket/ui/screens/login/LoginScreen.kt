@@ -11,12 +11,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.miaumarket.R
 import com.example.miaumarket.ui.AuthState
 
 @Composable
@@ -71,13 +73,13 @@ fun LoginContent(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "MiauMarket",
+                    text = stringResource(R.string.app_name),
                     style = MaterialTheme.typography.displayMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
 
                 Text(
-                    text = "Welcome back, feline friend!",
+                    text = stringResource(R.string.welcome_back),
                     style = MaterialTheme.typography.bodyLarge
                 )
 
@@ -86,7 +88,7 @@ fun LoginContent(
                 OutlinedTextField(
                     value = email,
                     onValueChange = onEmailChange,
-                    label = { Text("Email") },
+                    label = { Text(stringResource(R.string.email)) },
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                     singleLine = true,
@@ -97,7 +99,7 @@ fun LoginContent(
                 OutlinedTextField(
                     value = password,
                     onValueChange = onPasswordChange,
-                    label = { Text("Password") },
+                    label = { Text(stringResource(R.string.password)) },
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                     trailingIcon = {
@@ -113,7 +115,7 @@ fun LoginContent(
 
                 if (authState is AuthState.Error) {
                     Text(
-                        text = (authState as AuthState.Error).message,
+                        text = authState.message,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -131,12 +133,12 @@ fun LoginContent(
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text("Login")
+                        Text(stringResource(R.string.login))
                     }
                 }
 
                 TextButton(onClick = onNavigateToRegister) {
-                    Text("Don't have an account? Register here")
+                    Text(stringResource(R.string.register_here_cta))
                 }
             }
         }

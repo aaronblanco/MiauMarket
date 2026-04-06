@@ -27,7 +27,7 @@ class LoginViewModel @Inject constructor(
         val currentPassword = password.value
 
         if (currentUsername.isBlank() || currentPassword.isBlank()) {
-            _authState.value = AuthState.Error("Please enter username and password")
+            _authState.value = AuthState.Error("Introduce tu correo electrónico y tu contraseña")
             return
         }
 
@@ -37,7 +37,7 @@ class LoginViewModel @Inject constructor(
             result.onSuccess { token ->
                 _authState.value = AuthState.Success(token)
             }.onFailure { error ->
-                _authState.value = AuthState.Error(error.message ?: "Unknown error occurred")
+                _authState.value = AuthState.Error(error.message ?: "Se ha producido un error desconocido")
             }
         }
     }
