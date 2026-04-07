@@ -1,96 +1,213 @@
-# Documentación del Modelo de Datos - MiauMarket
+# Documentacion del Modelo de Datos - MiauMarket
 
-Este documento detalla la estructura de datos utilizada en la aplicación MiauMarket, cubriendo tanto la persistencia local como los datos consumidos desde el backend.
+Este documento describe solo los datos que afectan al consumo de la app Android (Retrofit/Moshi + DataStore) contra el backend comun.
 
-## 1. Persistencia Local (DataStore)
+## 1. Persistencia local en Android (DataStore)
 
-La aplicación utiliza **Jetpack DataStore (Preferences)** para el manejo de sesiones de usuario. Al ser un almacén de clave-valor, se documenta la "tabla" lógica de preferencias.
+### Nombre: session_prefs
+Representa la sesion activa en el dispositivo.
 
-### Nombre: `session_prefs`
-Representa el estado de la sesión activa del usuario.
-
-| Campo | Tipo | Obligatorio | Descripción |
+| Campo | Tipo Kotlin | Obligatorio | Descripcion |
 | :--- | :--- | :--- | :--- |
-| `jwt_token` | String | Opcional | Token de autenticación JWT devuelto por el servidor. |
+| jwt_token | String | No | JWT para enviar en Authorization: Bearer <token>. |
 
-**Ejemplo de registro:**
+Ejemplo real:
 ```json
 {
-  "jwt_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  "jwt_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJwZXBlQGV4YW1wbGUuY29tIiwicm9sZSI6InVzZXIifQ.signature"
 }
 ```
 
----
+## 2. Contrato API que consume Android
 
-## 2. Modelos de Backend (Retrofit / Moshi)
+Base path: /api
 
-MiauMarket consume una API REST. A continuación se detallan las estructuras de datos (DTOs) que la app maneja en Kotlin.
+### 2.1 Auth
 
-### A. Colección: `Products`
-Representa el catálogo de productos para gatos scrapeados o creados manualmente.
+#### POST /api/auth/register
+Escritura de usuario y apertura de sesion.
 
-| Campo | Tipo | Obligatorio | Descripción |
-| :--- | :--- | :--- | :--- |
-| `id` | String | Sí | Identificador único del producto. |
-| `title` | String | Sí | Nombre comercial del producto. |
-| `price` | Double | Sí | Precio numérico actual. |
-| `currency` | String | Opcional | Moneda (ej. "EUR"). Por defecto "EUR". |
-| `image` | String | Opcional | URL de la imagen del producto. |
-| `url` | String | Opcional | Enlace a la tienda original (Kiwoko, etc). |
-| `source` | String | Opcional | Origen del producto (ej. "kiwoko", "manual"). |
+Request:
+| Campo | Tipo Kotlin | Obligatorio |
+| :--- | :--- | :--- |
+| firstName | String | Si |
+| lastName | String | Si |
+| birthDate | String (yyyy-MM-dd) | Si |
+| email | String | Si |
+| password | String | Si |
+| role | String | No (default user) |
 
-**Ejemplo de registro:**
+Response (201):
 ```json
 {
-  "id": "prod_8821x",
-  "title": "Rascador para gatos Árbol Miau",
-  "price": 45.95,
-  "currency": "EUR",
-  "image": "https://cdn.kiwoko.com/rascador.jpg",
-  "url": "https://www.kiwoko.com/p/rascador-arbol",
-  "source": "kiwoko"
+  "token": "<jwt>",
+  "user": {
+    "id": 1,
+    "firstName": "Pepe",
+    "lastName": "Garcia",
+    "birthDate": "1998-05-21T00:00:00.000Z",
+    "email": "pepe@example.com",
+    "role": "user"
+  }
 }
 ```
 
-### B. Colección: `Users`
-Representa a los usuarios registrados en el sistema.
+#### POST /api/auth/login
+Inicio de sesion.
 
-| Campo | Tipo | Obligatorio | Descripción |
-| :--- | :--- | :--- | :--- |
-| `id` | String | Sí | ID único generado por el backend. |
-| `firstName` | String | Sí | Nombre del usuario. |
-| `lastName` | String | Sí | Apellido del usuario. |
-| `email` | String | Sí | Correo electrónico (usado para login). |
-| `birthDate` | String | Sí | Fecha de nacimiento (ISO 8601). |
-| `role` | String | Sí | Rol del usuario ("user" o "admin"). |
+Request:
+| Campo | Tipo Kotlin | Obligatorio |
+| :--- | :--- | :--- |
+| email | String | Si |
+| password | String | Si |
 
-**Ejemplo de registro:**
+Response (200):
 ```json
 {
-  "id": "user_001",
-  "firstName": "Pepe",
-  "lastName": "García",
-  "email": "pepe@example.com",
-  "birthDate": "1998-05-21",
-  "role": "user"
+  "token": "<jwt>",
+  "user": {
+    "id": 1,
+    "firstName": "Pepe",
+    "lastName": "Garcia",
+    "birthDate": "1998-05-21T00:00:00.000Z",
+    "email": "pepe@example.com",
+    "role": "user"
+  }
 }
 ```
 
----
+#### GET /api/auth/me
+Lectura del usuario autenticado.
 
-## 3. Relaciones y Cardinalidad
+Header recomendado en Android:
+Authorization: Bearer <jwt_token>
 
-Debido a que la aplicación actual consume datos de forma reactiva desde una API REST, las relaciones se gestionan mediante identificadores en los DTOs:
+Response (200):
+```json
+{
+  "user": {
+    "id": 1,
+    "firstName": "Pepe",
+    "lastName": "Garcia",
+    "birthDate": "1998-05-21T00:00:00.000Z",
+    "email": "pepe@example.com",
+    "role": "user"
+  }
+}
+```
 
-1.  **Producto -> Fuente (1:1)**: Cada producto tiene un campo `source` que indica su origen. Se implementa como un String en el DTO `ProductResponse`.
-2.  **Usuario -> Sesión (1:1)**: Un usuario identificado por su `id` tiene una única sesión activa en el dispositivo, representada por el `jwt_token` en DataStore.
-3.  **Carrito de Compra (Próxima Fase - 1:N)**: Un Usuario podrá tener múltiples productos en su carrito. Se implementará referenciando el `id` del producto en una colección `Cart`.
+#### POST /api/auth/logout
+Invalidacion de sesion en cliente (el backend responde confirmacion).
 
----
+Response (200):
+```json
+{ "ok": true }
+```
 
-## 4. Decisiones sobre el Dataset
+### 2.2 Products
 
-Para el catálogo de productos, se ha decidido:
-*   **Conservar**: `title`, `price`, `image` y `url`. Son esenciales para la comparación de precios y la redirección a compra.
-*   **Descartar**: Descripciones largas y metadatos técnicos del scraping original para optimizar el tráfico de red en el móvil y mantener una interfaz limpia enfocada en la búsqueda rápida.
-*   **Transformación**: El campo `rawPrice` del backend se convierte a `Double` en la app para permitir filtros por rango de precio.
+#### GET /api/products
+Lectura paginada del catalogo.
+
+Query params:
+| Parametro | Tipo | Obligatorio | Descripcion |
+| :--- | :--- | :--- | :--- |
+| search | String | No | Filtro por title o source. |
+| take | Int | No | Tamano de pagina (default 20). |
+| skip | Int | No | Offset (default 0). |
+
+Response (200):
+```json
+{
+  "total": 128,
+  "take": 20,
+  "skip": 0,
+  "items": [
+    {
+      "id": 57,
+      "source": "kiwoko",
+      "title": "Rascador arbol para gatos",
+      "price": 45.95,
+      "rawPrice": "45.95 EUR",
+      "currency": "EUR",
+      "url": "https://www.kiwoko.com/gatos/rascador-x",
+      "image": "https://cdn.kiwoko.com/rascador-x.jpg",
+      "scrapedAt": "2026-04-07T10:32:12.000Z",
+      "createdAt": "2026-04-07T10:33:01.000Z",
+      "updatedAt": "2026-04-07T10:33:01.000Z"
+    }
+  ]
+}
+```
+
+#### GET /api/products/:id
+Lectura de detalle por id numerico.
+
+#### POST /api/products
+Creacion manual de producto (requiere rol admin).
+
+#### PUT /api/products/:id
+Actualizacion de producto (requiere rol admin).
+
+#### DELETE /api/products/:id
+Borrado de producto (requiere rol admin).
+
+## 3. DTOs Kotlin recomendados (ajustados al contrato real)
+
+### ProductResponse
+| Campo | Tipo Kotlin | Obligatorio |
+| :--- | :--- | :--- |
+| id | Long | Si |
+| source | String | Si |
+| title | String | Si |
+| price | Double? | No |
+| rawPrice | String? | No |
+| currency | String | Si |
+| url | String | Si |
+| image | String? | No |
+| scrapedAt | String | Si |
+| createdAt | String | Si |
+| updatedAt | String | Si |
+
+Nota UI: si la app quiere usar name, se puede mapear localmente title -> name sin cambiar el JSON recibido.
+
+### ProductsListResponse
+| Campo | Tipo Kotlin | Obligatorio |
+| :--- | :--- | :--- |
+| total | Int | Si |
+| take | Int | Si |
+| skip | Int | Si |
+| items | List<ProductResponse> | Si |
+
+### UserResponse
+| Campo | Tipo Kotlin | Obligatorio |
+| :--- | :--- | :--- |
+| id | Long | Si |
+| firstName | String | Si |
+| lastName | String | Si |
+| birthDate | String | Si |
+| email | String | Si |
+| role | String | Si |
+
+### AuthResponse
+| Campo | Tipo Kotlin | Obligatorio |
+| :--- | :--- | :--- |
+| token | String | Si |
+| user | UserResponse | Si |
+
+## 4. Relaciones y cardinalidad relevantes para Android
+
+1. Usuario -> Sesion en dispositivo (1 : 0..1)
+Un usuario puede tener como maximo un jwt_token guardado en este dispositivo.
+
+2. Products (lista) -> Product (1 : N)
+GET /api/products devuelve una coleccion paginada de productos en items.
+
+3. Producto -> Fuente (N : 1 logica)
+Cada producto tiene un source textual (kiwoko, manual) para identificar origen.
+
+## 5. Decisiones de dataset que afectan a la app
+
+- Se conservan id, title, price, currency, image, url y source porque son los campos usados por listado, detalle y filtros.
+- Se descartan descripciones largas y metadatos no usados para reducir trafico y complejidad en Android.
+- birthDate se captura en UX como dd/MM/aaaa y antes de enviar se transforma a yyyy-MM-dd.

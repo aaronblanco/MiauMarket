@@ -2,7 +2,6 @@ package com.example.miaumarket.ui.screens.register
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.miaumarket.data.remote.dto.LoginRequest
 import com.example.miaumarket.data.remote.dto.RegisterRequest
 import com.example.miaumarket.domain.repository.AuthRepository
 import com.example.miaumarket.ui.AuthState
@@ -58,14 +57,8 @@ class RegisterViewModel @Inject constructor(
                     password = pass
                 )
             )
-            result.onSuccess {
-                authRepository.login(LoginRequest(mail, pass))
-                    .onSuccess { token ->
-                        _authState.value = AuthState.Success(token)
-                    }
-                    .onFailure { error ->
-                        _authState.value = AuthState.Error(error.message ?: "Te has registrado correctamente, pero no se ha podido iniciar sesión automáticamente")
-                    }
+            result.onSuccess { token ->
+                _authState.value = AuthState.Success(token)
             }.onFailure { error ->
                 _authState.value = AuthState.Error(error.message ?: "No se ha podido completar el registro")
             }

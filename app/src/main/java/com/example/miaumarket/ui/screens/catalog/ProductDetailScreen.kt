@@ -31,9 +31,10 @@ fun ProductDetailScreen(
     val selectedProduct by viewModel.selectedProduct.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val numericProductId = remember(productId) { productId.toLongOrNull() }
 
-    LaunchedEffect(productId) {
-        viewModel.getProductById(productId)
+    LaunchedEffect(numericProductId) {
+        numericProductId?.let { viewModel.getProductById(it) }
     }
 
     Scaffold(
@@ -78,7 +79,7 @@ fun ProductDetailScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "${product.price} ${product.currency ?: "€"}",
+                            text = product.price?.let { "$it ${product.currency}" } ?: "-",
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.primary
                         )

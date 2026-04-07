@@ -26,14 +26,11 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun register(request: RegisterRequest): Result<Unit> {
+    override suspend fun register(request: RegisterRequest): Result<String> {
         return try {
             val response = authApi.register(request)
-            if (response.isSuccessful) {
-                Result.success(Unit)
-            } else {
-                Result.failure(IllegalStateException("HTTP ${response.code()}"))
-            }
+            sessionManager.saveToken(response.token)
+            Result.success(response.token)
         } catch (e: Exception) {
             Result.failure(IllegalStateException("No se ha podido completar el registro", e))
         }
@@ -56,7 +53,7 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun getCurrentUser(): Result<UserResponse> {
         return try {
             val response = authApi.getMe()
-            Result.success(response)
+            Result.success(response.user)
         } catch (e: Exception) {
             Result.failure(e)
         }

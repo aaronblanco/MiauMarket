@@ -65,7 +65,7 @@ class ProductViewModel @Inject constructor(
     private val _selectedProduct = MutableStateFlow<ProductResponse?>(null)
     val selectedProduct: StateFlow<ProductResponse?> = _selectedProduct.asStateFlow()
 
-    fun getProductById(id: String) {
+    fun getProductById(id: Long) {
         viewModelScope.launch {
             _isLoading.value = true
             val result = productRepository.getProductById(id)

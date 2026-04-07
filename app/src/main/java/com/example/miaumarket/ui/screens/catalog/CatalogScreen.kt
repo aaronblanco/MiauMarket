@@ -124,7 +124,7 @@ fun CatalogContent(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(products) { product ->
-                            ProductCard(product = product, onClick = { onProductClick(product.id) })
+                            ProductCard(product = product, onClick = { onProductClick(product.id.toString()) })
                         }
                         if (isLoading) {
                             item {
@@ -172,7 +172,7 @@ fun ProductCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "${product.price} €",
+                    text = product.price?.let { "$it ${product.currency}" } ?: "-",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -194,8 +194,8 @@ fun CatalogScreenPreview() {
     MiauMarketTheme {
         CatalogContent(
             products = listOf(
-                ProductResponse("1", "Cat Tree", 49.99, null, null, "EUR", "manual"),
-                ProductResponse("2", "Cat Toy", 5.99, null, null, "EUR", "kiwoko")
+                ProductResponse(id = 1L, name = "Cat Tree", price = 49.99, currency = "EUR", source = "manual"),
+                ProductResponse(id = 2L, name = "Cat Toy", price = 5.99, currency = "EUR", source = "kiwoko")
             ),
             isLoading = false,
             searchQuery = "",

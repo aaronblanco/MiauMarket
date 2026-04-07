@@ -22,7 +22,7 @@ class ProductRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getProductById(id: String): Result<ProductResponse> {
+    override suspend fun getProductById(id: Long): Result<ProductResponse> {
         return try {
             val response = productApi.getProductById(id)
             Result.success(response)
