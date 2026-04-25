@@ -53,3 +53,6 @@ val BackgroundDark = Color(0xFF201A1B)
 val OnBackgroundDark = Color(0xFFECE0E1)
 val SurfaceDark = Color(0xFF201A1B)
 val OnSurfaceDark = Color(0xFFECE0E1)
+
+// Backend-inspired colors
+val CartActionColor = Color(0xFF4CAF50) // Un verde vibrante común en acciones de carrito/añadir

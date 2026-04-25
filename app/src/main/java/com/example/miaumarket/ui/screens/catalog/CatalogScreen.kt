@@ -5,14 +5,21 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.AddShoppingCart
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -22,26 +29,54 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.miaumarket.R
 import com.example.miaumarket.data.remote.dto.ProductResponse
+import com.example.miaumarket.ui.theme.CartActionColor
 import com.example.miaumarket.ui.theme.MiauMarketTheme
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CatalogScreen(
     viewModel: ProductViewModel,
-    onProductClick: (String) -> Unit,
-    onNavigateToLogin: () -> Unit
+    onProductClick: (Long) -> Unit,
+    onNavigateToLogin: () -> Unit,
+    onNavigateToCreateProduct: () -> Unit,
+    onNavigateToCart: () -> Unit
 ) {
     val products by viewModel.products.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val error by viewModel.error.collectAsStateWithLifecycle()
+    val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle()
+    val isAdmin by viewModel.isAdmin.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     CatalogContent(
         products = products,
         isLoading = isLoading,
         searchQuery = searchQuery,
+        error = error,
+        isLoggedIn = isLoggedIn,
+        isAdmin = isAdmin,
+        snackbarHostState = snackbarHostState,
         onSearchQueryChange = { viewModel.onSearchQueryChange(it) },
         onProductClick = onProductClick,
-        onNavigateToLogin = onNavigateToLogin
+        onAddToCart = { product ->
+            viewModel.addToCart(product)
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = "${product.name} añadido al carrito",
+                    duration = SnackbarDuration.Short
+                )
+            }
+        },
+        onNavigateToLogin = onNavigateToLogin,
+        onLogout = { viewModel.logout() },
+        onLoadNextPage = viewModel::loadNextPage,
+        onNavigateToCreateProduct = onNavigateToCreateProduct,
+        onNavigateToCart = onNavigateToCart
     )
 }
 
@@ -51,10 +86,36 @@ fun CatalogContent(
     products: List<ProductResponse>,
     isLoading: Boolean,
     searchQuery: String,
+    error: String?,
+    isLoggedIn: Boolean,
+    isAdmin: Boolean,
+    snackbarHostState: SnackbarHostState,
     onSearchQueryChange: (String) -> Unit,
-    onProductClick: (String) -> Unit,
-    onNavigateToLogin: () -> Unit
+    onProductClick: (Long) -> Unit,
+    onAddToCart: (ProductResponse) -> Unit,
+    onNavigateToLogin: () -> Unit,
+    onLogout: () -> Unit,
+    onLoadNextPage: () -> Unit,
+    onNavigateToCreateProduct: () -> Unit,
+    onNavigateToCart: () -> Unit
 ) {
+    val gridState = rememberLazyGridState()
+    var showMenu by remember { mutableStateOf(false) }
+
+    LaunchedEffect(gridState, products.size, isLoading) {
+        snapshotFlow {
+            val layoutInfo = gridState.layoutInfo
+            val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val totalItems = layoutInfo.totalItemsCount
+            totalItems > 0 && lastVisible >= totalItems - 4
+        }
+            .distinctUntilChanged()
+            .filter { it }
+            .collect {
+                onLoadNextPage()
+            }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -66,14 +127,45 @@ fun CatalogContent(
                     )
                 },
                 actions = {
-                    IconButton(onClick = onNavigateToLogin) {
+                    IconButton(onClick = onNavigateToCart) {
                         Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = stringResource(R.string.login_icon_cd)
+                            imageVector = Icons.Default.ShoppingCart,
+                            contentDescription = "Carrito"
                         )
+                    }
+                    Box {
+                        IconButton(onClick = { 
+                            if (isLoggedIn) showMenu = true else onNavigateToLogin() 
+                        }) {
+                            Icon(
+                                imageVector = if (isLoggedIn) Icons.Default.Person else Icons.Default.AccountCircle,
+                                contentDescription = stringResource(R.string.login_icon_cd),
+                                tint = if (isLoggedIn) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Cerrar sesión") },
+                                onClick = {
+                                    showMenu = false
+                                    onLogout()
+                                }
+                            )
+                        }
                     }
                 }
             )
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        floatingActionButton = {
+            if (isAdmin) {
+                FloatingActionButton(onClick = onNavigateToCreateProduct) {
+                    Icon(Icons.Default.Add, contentDescription = "Añadir producto")
+                }
+            }
         }
     ) { paddingValues ->
         Column(
@@ -100,6 +192,15 @@ fun CatalogContent(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {}
 
+            if (error != null) {
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                )
+            }
+
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -119,12 +220,17 @@ fun CatalogContent(
                 } else {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
+                        state = gridState,
                         contentPadding = PaddingValues(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(products) { product ->
-                            ProductCard(product = product, onClick = { onProductClick(product.id.toString()) })
+                            ProductCard(
+                                product = product,
+                                onClick = { onProductClick(product.id) },
+                                onAddToCart = { onAddToCart(product) }
+                            )
                         }
                         if (isLoading) {
                             item {
@@ -146,7 +252,8 @@ fun CatalogContent(
 @Composable
 fun ProductCard(
     product: ProductResponse,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onAddToCart: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -176,12 +283,33 @@ fun ProductCard(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
-                if (product.source != null) {
-                    SuggestionChip(
-                        onClick = { },
-                        label = { Text(product.source, style = MaterialTheme.typography.labelSmall) },
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (product.source != null) {
+                        SuggestionChip(
+                            onClick = { },
+                            label = { Text(product.source, style = MaterialTheme.typography.labelSmall) }
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+
+                    IconButton(
+                        onClick = onAddToCart,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AddShoppingCart,
+                            contentDescription = "Añadir al carrito",
+                            tint = CartActionColor,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
             }
         }
@@ -199,9 +327,18 @@ fun CatalogScreenPreview() {
             ),
             isLoading = false,
             searchQuery = "",
+            error = null,
+            isLoggedIn = true,
+            isAdmin = true,
+            snackbarHostState = remember { SnackbarHostState() },
             onSearchQueryChange = {},
             onProductClick = {},
-            onNavigateToLogin = {}
+            onAddToCart = {},
+            onNavigateToLogin = {},
+            onLogout = {},
+            onLoadNextPage = {},
+            onNavigateToCreateProduct = {},
+            onNavigateToCart = {}
         )
     }
 }

@@ -1,11 +1,15 @@
 package com.example.miaumarket.ui.navigation
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.example.miaumarket.ui.screens.catalog.*
+import com.example.miaumarket.ui.screens.cart.CartScreen
+import com.example.miaumarket.ui.screens.cart.CartViewModel
 import com.example.miaumarket.ui.screens.login.LoginScreen
 import com.example.miaumarket.ui.screens.login.LoginViewModel
 import com.example.miaumarket.ui.screens.register.RegisterScreen
@@ -23,7 +27,13 @@ object RegisterRoute
 object CatalogRoute
 
 @Serializable
-data class ProductDetailRoute(val id: String)
+data class ProductDetailRoute(val id: Long)
+
+@Serializable
+data class ProductFormRoute(val productId: Long? = null)
+
+@Serializable
+object CartRoute
 
 @Composable
 fun NavGraph(
@@ -73,18 +83,55 @@ fun NavGraph(
                 },
                 onNavigateToLogin = {
                     navController.navigate(LoginRoute)
+                },
+                onNavigateToCreateProduct = {
+                    navController.navigate(ProductFormRoute())
+                },
+                onNavigateToCart = {
+                    navController.navigate(CartRoute)
                 }
             )
         }
         composable<ProductDetailRoute> { backStackEntry ->
             val route: ProductDetailRoute = backStackEntry.toRoute()
-            val viewModel: ProductViewModel = hiltViewModel()
+            // Obtenemos el ViewModel de la entrada del Catálogo para compartir la instancia
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(CatalogRoute)
+            }
+            val viewModel: ProductViewModel = hiltViewModel(parentEntry)
+            
             ProductDetailScreen(
                 productId = route.id,
                 viewModel = viewModel,
                 onBackClick = {
                     navController.popBackStack()
+                },
+                onEditClick = { id ->
+                    navController.navigate(ProductFormRoute(id))
                 }
+            )
+        }
+        composable<ProductFormRoute> { backStackEntry ->
+            val route: ProductFormRoute = backStackEntry.toRoute()
+            // Compartimos la misma instancia también aquí
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(CatalogRoute)
+            }
+            val viewModel: ProductViewModel = hiltViewModel(parentEntry)
+
+            ProductFormScreen(
+                productId = route.productId,
+                viewModel = viewModel,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable<CartRoute> {
+            val viewModel: CartViewModel = hiltViewModel()
+            CartScreen(
+                viewModel = viewModel,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

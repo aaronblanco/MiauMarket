@@ -2,9 +2,8 @@ package com.example.miaumarket.data.remote
 
 import com.example.miaumarket.data.remote.dto.ProductListResponse
 import com.example.miaumarket.data.remote.dto.ProductResponse
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
+import com.example.miaumarket.data.remote.dto.ProductRequest
+import retrofit2.http.*
 
 interface ProductApi {
     @GET("api/products")
@@ -16,4 +15,13 @@ interface ProductApi {
 
     @GET("api/products/{id}")
     suspend fun getProductById(@Path("id") id: Long): ProductResponse
+
+    @POST("api/products")
+    suspend fun createProduct(@Body product: ProductRequest): ProductResponse
+
+    @PUT("api/products/{id}")
+    suspend fun updateProduct(@Path("id") id: Long, @Body product: ProductRequest): ProductResponse
+
+    @DELETE("api/products/{id}")
+    suspend fun deleteProduct(@Path("id") id: Long)
 }

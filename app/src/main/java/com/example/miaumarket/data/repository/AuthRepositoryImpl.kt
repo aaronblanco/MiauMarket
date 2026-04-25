@@ -6,7 +6,10 @@ import com.example.miaumarket.data.remote.dto.LoginRequest
 import com.example.miaumarket.data.remote.dto.RegisterRequest
 import com.example.miaumarket.data.remote.dto.UserResponse
 import com.example.miaumarket.domain.repository.AuthRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
+import retrofit2.HttpException
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,8 +24,10 @@ class AuthRepositoryImpl @Inject constructor(
             val response = authApi.login(request)
             sessionManager.saveToken(response.token)
             Result.success(response.token)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(e.toUserFacingException("No se ha podido iniciar sesión"))
         }
     }
 
@@ -31,8 +36,10 @@ class AuthRepositoryImpl @Inject constructor(
             val response = authApi.register(request)
             sessionManager.saveToken(response.token)
             Result.success(response.token)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            Result.failure(IllegalStateException("No se ha podido completar el registro", e))
+            Result.failure(e.toUserFacingException("No se ha podido completar el registro"))
         }
     }
 
@@ -54,8 +61,40 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val response = authApi.getMe()
             Result.success(response.user)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(e.toUserFacingException("No se ha podido obtener el usuario actual"))
         }
+    }
+
+    private fun Throwable.toUserFacingException(defaultMessage: String): Throwable {
+        val message = when (this) {
+            is HttpException -> {
+                response()?.errorBody()?.string()
+                    ?.extractBackendMessage()
+                    ?: when (code()) {
+                        401 -> "Credenciales incorrectas o sesión caducada"
+                        403 -> "No tienes permisos para realizar esta acción"
+                        404 -> "No se ha encontrado el recurso solicitado"
+                        in 500..599 -> "El servidor no está disponible en este momento"
+                        else -> defaultMessage
+                    }
+            }
+            is IOException -> "No se ha podido conectar con el servidor"
+            else -> message?.takeIf { it.isNotBlank() } ?: defaultMessage
+        }
+
+        return IllegalStateException(message, this)
+    }
+
+    private fun String.extractBackendMessage(): String? {
+        val trimmed = trim()
+        if (trimmed.isEmpty()) return null
+
+        Regex("\"message\"\\s*:\\s*\"([^\"]+)\"").find(trimmed)?.groupValues?.getOrNull(1)?.let { return it }
+        Regex("\"error\"\\s*:\\s*\"([^\"]+)\"").find(trimmed)?.groupValues?.getOrNull(1)?.let { return it }
+
+        return trimmed.removePrefix("{").removeSuffix("}").takeIf { it.isNotBlank() }
     }
 }

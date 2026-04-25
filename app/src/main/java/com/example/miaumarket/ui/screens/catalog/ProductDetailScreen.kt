@@ -6,6 +6,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,21 +22,25 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.miaumarket.R
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen(
-    productId: String,
+    productId: Long,
     viewModel: ProductViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onEditClick: (Long) -> Unit
 ) {
     val selectedProduct by viewModel.selectedProduct.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val isAdmin by viewModel.isAdmin.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val numericProductId = remember(productId) { productId.toLongOrNull() }
 
-    LaunchedEffect(numericProductId) {
-        numericProductId?.let { viewModel.getProductById(it) }
+    LaunchedEffect(productId) {
+        viewModel.getProductById(productId)
     }
 
     Scaffold(
@@ -45,9 +51,23 @@ fun ProductDetailScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
+                },
+                actions = {
+                    if (isAdmin && selectedProduct != null) {
+                        IconButton(onClick = { onEditClick(productId) }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Editar")
+                        }
+                        IconButton(onClick = { 
+                            viewModel.deleteProduct(productId)
+                            onBackClick()
+                        }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Eliminar")
+                        }
+                    }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -92,6 +112,28 @@ fun ProductDetailScreen(
                         }
                         Spacer(modifier = Modifier.height(32.dp))
                         Button(
+                            onClick = { 
+                                viewModel.addToCart(product)
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "${product.name} añadido al carrito",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.medium,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        ) {
+                            Icon(Icons.Default.ShoppingCart, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Añadir al carrito")
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedButton(
                             onClick = {
                                 product.sourceUrl?.let {
                                     val intent = Intent(Intent.ACTION_VIEW, it.toUri())
@@ -102,8 +144,6 @@ fun ProductDetailScreen(
                             modifier = Modifier.fillMaxWidth(),
                             shape = MaterialTheme.shapes.medium
                         ) {
-                            Icon(Icons.Default.ShoppingCart, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
                             Text(stringResource(R.string.open_in_store))
                         }
                     }
