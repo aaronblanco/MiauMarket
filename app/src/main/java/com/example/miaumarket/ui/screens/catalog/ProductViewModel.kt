@@ -2,12 +2,12 @@ package com.example.miaumarket.ui.screens.catalog
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.miaumarket.data.remote.dto.ProductResponse
-import com.example.miaumarket.data.remote.dto.ProductRequest
-import com.example.miaumarket.domain.model.CartItem
-import com.example.miaumarket.domain.repository.AuthRepository
-import com.example.miaumarket.domain.repository.CartRepository
-import com.example.miaumarket.domain.repository.ProductRepository
+import com.example.miaumarket.core.data.remote.dto.ProductResponse
+import com.example.miaumarket.core.data.remote.dto.ProductRequest
+import com.example.miaumarket.core.data.domain.model.CartItem
+import com.example.miaumarket.core.data.domain.repository.AuthRepository
+import com.example.miaumarket.core.data.domain.repository.CartRepository
+import com.example.miaumarket.core.data.domain.repository.ProductRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

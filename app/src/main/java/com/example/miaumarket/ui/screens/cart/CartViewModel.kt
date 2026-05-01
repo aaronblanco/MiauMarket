@@ -2,8 +2,8 @@ package com.example.miaumarket.ui.screens.cart
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.miaumarket.domain.model.CartItem
-import com.example.miaumarket.domain.repository.CartRepository
+import com.example.miaumarket.core.data.domain.model.CartItem
+import com.example.miaumarket.core.data.domain.repository.CartRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

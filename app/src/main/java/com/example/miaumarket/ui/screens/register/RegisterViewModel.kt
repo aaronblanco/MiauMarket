@@ -2,8 +2,8 @@ package com.example.miaumarket.ui.screens.register
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.miaumarket.data.remote.dto.RegisterRequest
-import com.example.miaumarket.domain.repository.AuthRepository
+import com.example.miaumarket.core.data.remote.dto.RegisterRequest
+import com.example.miaumarket.core.data.domain.repository.AuthRepository
 import com.example.miaumarket.ui.AuthState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -75,4 +75,3 @@ private fun String.toIsoBirthDate(): String? {
         null
     }
 }
-

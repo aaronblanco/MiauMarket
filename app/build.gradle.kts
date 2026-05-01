@@ -43,6 +43,9 @@ android {
 }
 
 dependencies {
+    // Core-Data module
+    implementation(project(":core-data"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -59,21 +62,6 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
-    // Retrofit & Networking
-    implementation(libs.retrofit)
-    implementation(libs.converter.moshi)
-    implementation(libs.okhttp)
-    implementation(libs.logging.interceptor)
-
-    // Moshi
-    implementation(libs.moshi.kotlin)
-    ksp(libs.moshi.kotlin.codegen)
-
-    // DataStore
-    implementation(libs.androidx.datastore.preferences)
-
-    // Serialization
-    implementation(libs.kotlinx.serialization.json)
 
     // Coil
     implementation(libs.coil.compose)

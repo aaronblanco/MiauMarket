@@ -10,6 +10,14 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
+    plugins {
+        id("com.android.application") version "9.1.1"
+        id("com.android.library") version "9.1.1"
+        id("org.jetbrains.kotlin.android") version "2.2.10"
+        id("org.jetbrains.kotlin.plugin.serialization") version "2.2.10"
+        id("com.google.dagger.hilt.android") version "2.59.2"
+        id("com.google.devtools.ksp") version "2.3.2"
+    }
 }
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
@@ -24,3 +32,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "MiauMarket"
 include(":app")
+include(":core-data")
+include(":wear")
+includeBuild("build-logic")

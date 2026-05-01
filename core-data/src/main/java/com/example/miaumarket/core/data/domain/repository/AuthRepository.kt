@@ -1,0 +1,15 @@
+package com.example.miaumarket.core.data.domain.repository
+
+import com.example.miaumarket.core.data.remote.dto.LoginRequest
+import com.example.miaumarket.core.data.remote.dto.RegisterRequest
+import com.example.miaumarket.core.data.remote.dto.UserResponse
+import kotlinx.coroutines.flow.Flow
+
+interface AuthRepository {
+    suspend fun login(request: LoginRequest): Result<String>
+    suspend fun register(request: RegisterRequest): Result<String>
+    suspend fun logout()
+    fun getAuthToken(): Flow<String?>
+    suspend fun getCurrentUser(): Result<UserResponse>
+}
+

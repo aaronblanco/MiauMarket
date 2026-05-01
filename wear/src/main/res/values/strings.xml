@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MiauMarket Watch</string>
+    <string name="catalog">Catálogo</string>
+    <string name="loading">Cargando...</string>
+    <string name="error">Error</string>
+    <string name="retry">Reintentar</string>
+    <string name="no_products">No hay productos disponibles</string>
+    <string name="product_details">Detalles del Producto</string>
+    <string name="price">Precio</string>
+    <string name="add_to_cart">Añadir al carrito</string>
+    <string name="added_to_cart">Añadido al carrito</string>
+</resources>
+
