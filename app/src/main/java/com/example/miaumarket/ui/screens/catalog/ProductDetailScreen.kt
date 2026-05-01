@@ -104,9 +104,10 @@ fun ProductDetailScreen(
                             color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        if (product.source != null) {
+                        val source = product.source
+                        if (source != null) {
                             Text(
-                                text = stringResource(R.string.source_label, product.source),
+                                text = stringResource(R.string.source_label, source),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }

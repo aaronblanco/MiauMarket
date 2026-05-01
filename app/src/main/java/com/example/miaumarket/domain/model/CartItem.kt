@@ -1,10 +1,4 @@
 package com.example.miaumarket.domain.model
 
-data class CartItem(
-    val productId: Long,
-    val name: String,
-    val price: Double?,
-    val currency: String,
-    val imageUrl: String?,
-    val quantity: Int = 1
-)
+// Re-export core-data's CartItem to keep a single canonical definition.
+typealias CartItem = com.example.miaumarket.core.data.domain.model.CartItem

@@ -1,5 +1,7 @@
 package com.example.miaumarket.di
 
+// Bind the core-data repository implementations to the core-data domain interfaces
+// so the app (which imports core-data types) receives the correct implementations.
 import com.example.miaumarket.core.data.repository.AuthRepositoryImpl
 import com.example.miaumarket.core.data.repository.ProductRepositoryImpl
 import com.example.miaumarket.core.data.repository.CartRepositoryImpl

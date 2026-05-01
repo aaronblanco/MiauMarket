@@ -1,37 +1,10 @@
 package com.example.miaumarket.core.data.di
 
-import com.example.miaumarket.core.data.repository.AuthRepositoryImpl
-import com.example.miaumarket.core.data.repository.ProductRepositoryImpl
-import com.example.miaumarket.core.data.repository.CartRepositoryImpl
-import com.example.miaumarket.core.data.domain.repository.AuthRepository
-import com.example.miaumarket.core.data.domain.repository.ProductRepository
-import com.example.miaumarket.core.data.domain.repository.CartRepository
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
+// This module used to contain Hilt bindings for repository implementations.
+// For the Kotlin-JVM `core-data` module we don't provide DI bindings; the
+// Android `app` module is responsible for binding concrete implementations
+// (and for providing Hilt modules). Keep this file as a placeholder.
 
-@Module
-@InstallIn(SingletonComponent::class)
-abstract class RepositoryModule {
+object RepositoryModulePlaceholder
 
-    @Binds
-    @Singleton
-    abstract fun bindAuthRepository(
-        authRepositoryImpl: AuthRepositoryImpl
-    ): AuthRepository
-
-    @Binds
-    @Singleton
-    abstract fun bindProductRepository(
-        productRepositoryImpl: ProductRepositoryImpl
-    ): ProductRepository
-
-    @Binds
-    @Singleton
-    abstract fun bindCartRepository(
-        cartRepositoryImpl: CartRepositoryImpl
-    ): CartRepository
-}
 

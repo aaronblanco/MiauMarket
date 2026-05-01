@@ -290,10 +290,11 @@ fun ProductCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (product.source != null) {
+                    val source = product.source
+                    if (source != null) {
                         SuggestionChip(
                             onClick = { },
-                            label = { Text(product.source, style = MaterialTheme.typography.labelSmall) }
+                            label = { Text(source, style = MaterialTheme.typography.labelSmall) }
                         )
                     } else {
                         Spacer(modifier = Modifier.weight(1f))

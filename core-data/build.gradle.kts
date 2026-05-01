@@ -1,72 +1,25 @@
 plugins {
-    id("miaumarket.library")
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.kotlin.serialization)
+    id("org.jetbrains.kotlin.jvm")
 }
 
-android {
-    namespace = "com.example.miaumarket.core.data"
-    compileSdk = 35
-
-    defaultConfig {
-        minSdk = 26
-        targetSdk = 35
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    buildFeatures {
-        buildConfig = true
-    }
-}
+group = "com.example.miaumarket.core"
+version = "0.1.0"
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
+    // DTOs and domain interfaces only — keep minimal JVM deps
+    implementation("com.squareup.moshi:moshi:1.15.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation("com.squareup.retrofit2:retrofit:2.12.0")
+    implementation("com.squareup.retrofit2:converter-moshi:2.12.0")
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+    implementation("javax.inject:javax.inject:1")
 
-    // Hilt
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-
-    // Retrofit & Networking
-    implementation(libs.retrofit)
-    implementation(libs.converter.moshi)
-    implementation(libs.okhttp)
-    implementation(libs.logging.interceptor)
-
-    // Moshi
-    implementation(libs.moshi.kotlin)
-    ksp(libs.moshi.kotlin.codegen)
-
-    // DataStore
-    implementation(libs.androidx.datastore.preferences)
-
-    // Serialization (como dependencia, no plugin)
-    implementation(libs.kotlinx.serialization.json)
-
-    // Coroutines
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.kotlinx.coroutines.android)
-
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    testImplementation("junit:junit:4.13.2")
 }
+
+
+
 
 
 

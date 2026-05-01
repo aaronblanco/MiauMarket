@@ -33,5 +33,6 @@ dependencyResolutionManagement {
 rootProject.name = "MiauMarket"
 include(":app")
 include(":core-data")
-include(":wear")
+// wear module temporarily excluded to allow JVM build while migrating core-data
+// include(":wear")
 includeBuild("build-logic")

@@ -5,9 +5,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
-import javax.inject.Inject
 
-class AuthInterceptor @Inject constructor(
+/**
+ * AuthInterceptor depends only on the `SessionManager` interface defined in
+ * core-data. The actual Android implementation will be provided by the app
+ * module and injected via Hilt there. Keep this class platform-neutral.
+ */
+class AuthInterceptor(
     private val sessionManager: SessionManager
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -22,4 +26,5 @@ class AuthInterceptor @Inject constructor(
         return chain.proceed(request)
     }
 }
+
 

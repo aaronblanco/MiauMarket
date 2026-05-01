@@ -17,21 +17,21 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 @Singleton
 class SessionManager @Inject constructor(
     @ApplicationContext private val context: Context
-) {
+) : com.example.miaumarket.core.data.local.SessionManager {
     private val TOKEN_KEY = stringPreferencesKey("jwt_token")
 
-    val token: Flow<String?> = context.dataStore.data
+    override val token: Flow<String?> = context.dataStore.data
         .map { preferences ->
             preferences[TOKEN_KEY]
         }
 
-    suspend fun saveToken(token: String) {
+    override suspend fun saveToken(token: String) {
         context.dataStore.edit { preferences ->
             preferences[TOKEN_KEY] = token
         }
     }
 
-    suspend fun clearToken() {
+    override suspend fun clearToken() {
         context.dataStore.edit { preferences ->
             preferences.remove(TOKEN_KEY)
         }
