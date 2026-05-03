@@ -11,8 +11,8 @@ pluginManagement {
         gradlePluginPortal()
     }
     plugins {
-        id("com.android.application") version "9.1.1"
-        id("com.android.library") version "9.1.1"
+        id("com.android.application") version "9.2.0"
+        id("com.android.library") version "9.2.0"
         id("org.jetbrains.kotlin.android") version "2.2.10"
         id("org.jetbrains.kotlin.plugin.serialization") version "2.2.10"
         id("com.google.dagger.hilt.android") version "2.59.2"
@@ -33,6 +33,5 @@ dependencyResolutionManagement {
 rootProject.name = "MiauMarket"
 include(":app")
 include(":core-data")
-// wear module temporarily excluded to allow JVM build while migrating core-data
-// include(":wear")
+include(":wear")
 includeBuild("build-logic")

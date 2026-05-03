@@ -4,15 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -22,9 +16,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.wear.compose.material.Button
-import androidx.wear.compose.material.Icon
+import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
+import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
+import androidx.wear.compose.material.Chip
+import androidx.wear.compose.material.CircularProgressIndicator
+import androidx.wear.compose.material.PositionIndicator
+import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
+import androidx.wear.compose.material.TimeText
 
 @Composable
 fun ProductDetailScreen(
@@ -32,30 +31,38 @@ fun ProductDetailScreen(
     viewModel: ProductDetailViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState()
+    val listState = rememberScalingLazyListState()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF1A1A1A))
+    Scaffold(
+        timeText = { TimeText() },
+        positionIndicator = { PositionIndicator(scalingLazyListState = listState) }
     ) {
-        when {
-            uiState.value.isLoading -> {
-                LoadingState()
-            }
-            uiState.value.error != null -> {
-                ErrorState(
-                    error = uiState.value.error,
-                    onRetry = { viewModel.retry() },
-                    onBack = onBackClick
-                )
-            }
-            uiState.value.product != null -> {
-                ProductContent(
-                    product = uiState.value.product!!,
-                    isAddedToCart = uiState.value.isAddedToCart,
-                    onAddToCart = { viewModel.addToCart() },
-                    onBack = onBackClick
-                )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+        ) {
+            when {
+                uiState.value.isLoading -> {
+                    LoadingState()
+                }
+                uiState.value.error != null -> {
+                    val errorMsg = uiState.value.error
+                    ErrorState(
+                        error = errorMsg,
+                        onRetry = { viewModel.retry() },
+                        onBack = onBackClick
+                    )
+                }
+                uiState.value.product != null -> {
+                    ProductContent(
+                        product = uiState.value.product!!,
+                        isAddedToCart = uiState.value.isAddedToCart,
+                        onAddToCart = { viewModel.addToCart() },
+                        onBack = onBackClick,
+                        listState = listState
+                    )
+                }
             }
         }
     }
@@ -66,76 +73,63 @@ fun ProductContent(
     product: com.example.miaumarket.core.data.remote.dto.ProductResponse,
     isAddedToCart: Boolean,
     onAddToCart: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    listState: androidx.wear.compose.foundation.lazy.ScalingLazyListState
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(12.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.CenterHorizontally
+    ScalingLazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        item {
             Text(
                 text = product.name,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                maxLines = 3
             )
+        }
 
+        item {
             if (product.price != null) {
                 Text(
                     text = "€${String.format("%.2f", product.price)}",
-                    fontSize = 12.sp,
-                    color = Color(0xFFFF6B6B)
+                    fontSize = 16.sp,
+                    color = Color(0xFFFF6B6B),
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
             }
+        }
 
-            if (!product.sourceUrl.isNullOrEmpty()) {
+        if (!product.source.isNullOrEmpty()) {
+            item {
                 Text(
-                    text = "Origen: ${product.source ?: "Desconocido"}",
+                    text = "Fuente: ${product.source}",
                     fontSize = 10.sp,
-                    color = Color.Gray
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (product.scrapedAt != null) {
-                Text(
-                    text = "Actualizado: ${product.scrapedAt}",
-                    fontSize = 9.sp,
                     color = Color.Gray
                 )
             }
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Button(
+        item {
+            Chip(
                 onClick = onAddToCart,
                 modifier = Modifier.fillMaxWidth(0.9f),
-                enabled = !isAddedToCart
-            ) {
-                Text(if (isAddedToCart) "✓ Añadido" else "Añadir al carrito")
-            }
+                label = { Text(if (isAddedToCart) "✓ En el carrito" else "Añadir al carrito", fontSize = 12.sp) }
+            )
+        }
 
-            Button(
+        item {
+            Chip(
                 onClick = onBack,
-                modifier = Modifier.fillMaxWidth(0.9f)
-            ) {
-                Text("Atrás")
-            }
+                modifier = Modifier.fillMaxWidth(0.9f),
+                label = { Text("Volver", fontSize = 12.sp) },
+                colors = androidx.wear.compose.material.ChipDefaults.secondaryChipColors()
+            )
         }
     }
 }
@@ -146,13 +140,14 @@ fun LoadingState() {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Text("Cargando...", fontSize = 14.sp)
+        CircularProgressIndicator()
     }
 }
 
+
 @Composable
 fun ErrorState(
-    error: String,
+    error: String?,
     onRetry: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -166,26 +161,19 @@ fun ErrorState(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Icon(
-                imageVector = Icons.Filled.Error,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(40.dp),
-                tint = Color(0xFFFF4444)
-            )
             Text(
-                text = error,
-                fontSize = 11.sp,
+                text = error ?: "Error desconocido",
+                fontSize = 10.sp,
                 textAlign = TextAlign.Center
             )
-            Button(onClick = onRetry) {
-                Text("Reintentar")
-            }
-            Button(onClick = onBack) {
-                Text("Atrás")
-            }
+            Chip(onClick = onRetry, label = { Text("Reintentar", fontSize = 10.sp) }, modifier = Modifier.fillMaxWidth(0.9f))
+            Chip(onClick = onBack, label = { Text("Atrás", fontSize = 10.sp) }, modifier = Modifier.fillMaxWidth(0.9f))
         }
     }
 }
+
+
+
+
+
 

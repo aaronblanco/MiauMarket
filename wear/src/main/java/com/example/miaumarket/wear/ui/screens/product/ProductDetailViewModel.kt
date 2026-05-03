@@ -3,11 +3,14 @@ package com.example.miaumarket.wear.ui.screens.product
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.miaumarket.core.data.domain.model.CartItem
+import com.example.miaumarket.core.data.domain.repository.CartRepository
 import com.example.miaumarket.core.data.domain.repository.ProductRepository
 import com.example.miaumarket.core.data.remote.dto.ProductResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,6 +24,7 @@ data class ProductDetailUiState(
 @HiltViewModel
 class ProductDetailViewModel @Inject constructor(
     private val productRepository: ProductRepository,
+    private val cartRepository: CartRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -31,6 +35,16 @@ class ProductDetailViewModel @Inject constructor(
 
     init {
         loadProductDetail()
+        checkIfInCart()
+    }
+
+    private fun checkIfInCart() {
+        viewModelScope.launch {
+            val items = cartRepository.cartItems.first()
+            _uiState.value = _uiState.value.copy(
+                isAddedToCart = items.any { it.productId == productId }
+            )
+        }
     }
 
     private fun loadProductDetail() {
@@ -58,9 +72,18 @@ class ProductDetailViewModel @Inject constructor(
     }
 
     fun addToCart() {
+        val product = _uiState.value.product ?: return
+        
+        cartRepository.addToCart(
+            CartItem(
+                productId = product.id,
+                name = product.name,
+                price = product.price,
+                currency = product.currency,
+                imageUrl = product.imageUrl
+            )
+        )
         _uiState.value = _uiState.value.copy(isAddedToCart = true)
-        // Simulación de añadido al carrito
-        // En una implementación real, esto interactuaría con CartRepository
     }
 
     fun retry() {

@@ -53,7 +53,6 @@ dependencies {
     // Wear OS
     implementation(libs.androidx.wear.compose.foundation)
     implementation(libs.androidx.wear.compose.material)
-    implementation(libs.androidx.wear.compose.ui)
     implementation(libs.androidx.wear.compose.navigation)
     implementation(libs.androidx.wear)
 
@@ -65,7 +64,15 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
+
+    // Networking
+    implementation(libs.retrofit)
+    implementation(libs.converter.moshi)
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+    implementation(libs.moshi.kotlin)
 
     // Image loading
     implementation(libs.coil.compose)
@@ -78,5 +85,8 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
+
+
+
 
 

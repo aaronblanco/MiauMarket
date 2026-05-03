@@ -4,15 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Error
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -22,10 +17,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.wear.compose.material.Button
-import androidx.wear.compose.material.Icon
+import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
+import androidx.wear.compose.foundation.lazy.items
+import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
+import androidx.wear.compose.material.Chip
+import androidx.wear.compose.material.CircularProgressIndicator
+import androidx.wear.compose.material.PositionIndicator
+import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
-import coil.compose.AsyncImage
+import androidx.wear.compose.material.TimeText
 
 @Composable
 fun CatalogScreen(
@@ -33,54 +33,61 @@ fun CatalogScreen(
     viewModel: CatalogViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState
+    val listState = rememberScalingLazyListState()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF1A1A1A))
+    Scaffold(
+        timeText = { TimeText() },
+        positionIndicator = { PositionIndicator(scalingLazyListState = listState) }
     ) {
-        when {
-            uiState.isLoading && uiState.products.isEmpty() -> {
-                LoadingScreen()
-            }
-            uiState.error != null && uiState.products.isEmpty() -> {
-                ErrorScreen(
-                    error = uiState.error,
-                    onRetry = { viewModel.retry() }
-                )
-            }
-            uiState.products.isEmpty() -> {
-                EmptyScreen()
-            }
-            else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    items(uiState.products) { product ->
-                        ProductCard(
-                            product = product,
-                            onClick = { onProductClick(product.id) }
-                        )
-                    }
-
-                    if (uiState.canLoadMore && !uiState.isLoading) {
-                        item {
-                            Button(
-                                onClick = { viewModel.loadNextPage() },
-                                modifier = Modifier.fillMaxWidth(0.9f)
-                            ) {
-                                Text("Cargar más")
-                            }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+        ) {
+            when {
+                uiState.isLoading && uiState.products.isEmpty() -> {
+                    LoadingScreen()
+                }
+                uiState.error != null && uiState.products.isEmpty() -> {
+                    val errorMsg = uiState.error
+                    ErrorScreen(
+                        error = errorMsg,
+                        onRetry = { viewModel.retry() }
+                    )
+                }
+                uiState.products.isEmpty() -> {
+                    EmptyScreen()
+                }
+                else -> {
+                    ScalingLazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        items(uiState.products) { product ->
+                            ProductCard(
+                                product = product,
+                                onClick = { onProductClick(product.id) }
+                            )
                         }
-                    }
 
-                    if (uiState.isLoading) {
-                        item {
-                            LoadingIndicator()
+                        if (uiState.canLoadMore) {
+                            item {
+                                if (uiState.isLoading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .padding(8.dp)
+                                            .size(24.dp)
+                                    )
+                                } else {
+                                    Chip(
+                                        onClick = { viewModel.loadNextPage() },
+                                        modifier = Modifier.fillMaxWidth(0.9f),
+                                        label = { Text("Cargar más", fontSize = 10.sp) }
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -94,71 +101,43 @@ fun ProductCard(
     product: com.example.miaumarket.core.data.remote.dto.ProductResponse,
     onClick: () -> Unit
 ) {
-    Button(
+    Chip(
         onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth(0.95f)
-            .height(80.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+        modifier = Modifier.fillMaxWidth(0.95f),
+        label = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = product.name,
-                    fontSize = 12.sp,
-                    maxLines = 2,
+                    fontSize = 11.sp,
+                    maxLines = 1,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier = Modifier.height(4.dp))
                 if (product.price != null) {
                     Text(
                         text = "€${String.format("%.2f", product.price)}",
-                        fontSize = 10.sp,
+                        fontSize = 9.sp,
                         color = Color(0xFFFF6B6B)
                     )
                 }
             }
         }
-    }
+    )
 }
 
 @Composable
 fun LoadingScreen() {
     Box(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        LoadingIndicator()
-    }
-}
-
-@Composable
-fun LoadingIndicator() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("Cargando...", fontSize = 14.sp)
+        CircularProgressIndicator()
     }
 }
 
 @Composable
 fun ErrorScreen(
-    error: String,
+    error: String?,
     onRetry: () -> Unit
 ) {
     Box(
@@ -171,22 +150,16 @@ fun ErrorScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Icon(
-                imageVector = Icons.Filled.Error,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(40.dp),
-                tint = Color(0xFFFF4444)
-            )
             Text(
-                text = error,
-                fontSize = 11.sp,
+                text = error ?: "Error desconocido",
+                fontSize = 10.sp,
                 textAlign = TextAlign.Center
             )
-            Button(onClick = onRetry) {
-                Text("Reintentar")
-            }
+            Chip(
+                onClick = onRetry,
+                modifier = Modifier.fillMaxWidth(0.9f),
+                label = { Text("Reintentar", fontSize = 10.sp) }
+            )
         }
     }
 }
@@ -194,16 +167,24 @@ fun ErrorScreen(
 @Composable
 fun EmptyScreen() {
     Box(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "No hay productos disponibles",
-            fontSize = 12.sp,
+            text = "No hay productos",
+            fontSize = 11.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(16.dp)
         )
     }
 }
+
+
+
+
+
+
+
+
+
 

@@ -65,7 +65,7 @@ dependencies {
 
     // Coil
     implementation(libs.coil.compose)
-
+    
     // Networking / Serialization (moved to core-data but declare here as consumers need these)
     implementation(libs.retrofit)
     implementation(libs.converter.moshi)
@@ -76,7 +76,6 @@ dependencies {
 
     // DataStore for SessionManager implementation
     implementation(libs.androidx.datastore.preferences)
-
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
