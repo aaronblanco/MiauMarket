@@ -19,11 +19,10 @@ import javax.inject.Singleton
 object NetworkModule {
 
     /**
-     * IMPORTANTE: '10.0.2.2' solo funciona en el emulador.
-     * Para probar en un RELOJ REAL, debes usar la IP local de tu PC (ej: 192.168.1.X).
-     * Asegúrate de que el reloj y el PC estén en la misma red Wi-Fi.
+     * URL del backend en producción (DigitalOcean).
+     * Al usar HTTPS, ya no dependemos de la red local ni de configuraciones de 'cleartext'.
      */
-    private const val BASE_URL = "http://192.168.1.128:3000/"
+    private const val BASE_URL = "https://miaumarket-fw87p.ondigitalocean.app/"
 
     @Provides
     @Singleton
