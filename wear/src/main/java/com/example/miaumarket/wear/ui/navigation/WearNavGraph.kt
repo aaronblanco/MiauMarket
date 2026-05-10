@@ -2,6 +2,8 @@ package com.example.miaumarket.wear.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import com.example.miaumarket.wear.ui.screens.catalog.CatalogScreen
@@ -28,7 +30,12 @@ fun WearNavGraph(navController: NavHostController) {
             )
         }
 
-        composable(WearRoute.ProductDetail.route) {
+        composable(
+            route = WearRoute.ProductDetail.route,
+            arguments = listOf(
+                navArgument("productId") { type = NavType.LongType }
+            )
+        ) {
             ProductDetailScreen(
                 onBackClick = {
                     navController.popBackStack()
