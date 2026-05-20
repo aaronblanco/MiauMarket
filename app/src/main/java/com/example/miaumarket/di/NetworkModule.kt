@@ -19,8 +19,8 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    // Set to http://10.0.2.2:3000/ to reach the host machine's loopback interface from an Android emulator.
-    private const val BASE_URL = "http://10.0.2.2:3000/"
+    // Backend web desplegado.
+    private const val BASE_URL = "https://miaumarket-fw87p.ondigitalocean.app/"
 
     @Provides
     @Singleton
