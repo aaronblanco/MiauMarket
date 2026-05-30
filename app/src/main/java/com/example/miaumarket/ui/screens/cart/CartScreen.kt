@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,6 +31,7 @@ import coil.compose.AsyncImage
 import com.example.miaumarket.R
 import com.example.miaumarket.domain.model.CartItem
 import com.example.miaumarket.notifications.PurchaseNotificationHelper
+import com.example.miaumarket.ui.components.CatBrandTitle
 import androidx.core.content.ContextCompat
 import java.util.Locale
 
@@ -81,7 +83,7 @@ fun CartScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Carrito de la compra") },
+                title = { CatBrandTitle(title = "Cesta felina") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
@@ -159,6 +161,8 @@ fun CartScreen(
                             onClick = { finalizePurchase() },
                             modifier = Modifier.height(56.dp)
                         ) {
+                            Icon(Icons.Default.Pets, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text("Finalizar compra")
                         }
                     }

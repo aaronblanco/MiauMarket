@@ -9,17 +9,15 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.AddShoppingCart
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.AddShoppingCart
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -29,6 +27,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.miaumarket.R
 import com.example.miaumarket.data.remote.dto.ProductResponse
+import com.example.miaumarket.ui.components.AddToCartCelebrationDialog
+import com.example.miaumarket.ui.components.CatBrandTitle
 import com.example.miaumarket.ui.theme.CartActionColor
 import com.example.miaumarket.ui.theme.MiauMarketTheme
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -52,6 +52,13 @@ fun CatalogScreen(
     val isAdmin by viewModel.isAdmin.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    var showAddCelebration by remember { mutableStateOf(false) }
+    var addedProductName by remember { mutableStateOf("") }
+
+    AddToCartCelebrationDialog(
+        visible = showAddCelebration,
+        onDismiss = { showAddCelebration = false }
+    )
 
     CatalogContent(
         products = products,
@@ -65,6 +72,7 @@ fun CatalogScreen(
         onProductClick = onProductClick,
         onAddToCart = { product ->
             viewModel.addToCart(product)
+            showAddCelebration = true
             scope.launch {
                 snackbarHostState.showSnackbar(
                     message = "${product.name} añadido al carrito",
@@ -119,17 +127,11 @@ fun CatalogContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.app_name),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
+                title = { CatBrandTitle(title = stringResource(R.string.catalog_title)) },
                 actions = {
                     IconButton(onClick = onNavigateToCart) {
                         Icon(
-                            imageVector = Icons.Default.ShoppingCart,
+                            imageVector = Icons.Default.AddShoppingCart,
                             contentDescription = "Carrito"
                         )
                     }
@@ -304,8 +306,8 @@ fun ProductCard(
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.AddShoppingCart,
-                            contentDescription = "Añadir al carrito",
+                            imageVector = Icons.Default.Pets,
+                            contentDescription = "Añadir con huella",
                             tint = CartActionColor,
                             modifier = Modifier.size(24.dp)
                         )

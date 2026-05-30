@@ -77,6 +77,7 @@ dependencies {
 
     // Coil
     implementation(libs.coil.compose)
+    implementation("io.coil-kt:coil-gif:2.7.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

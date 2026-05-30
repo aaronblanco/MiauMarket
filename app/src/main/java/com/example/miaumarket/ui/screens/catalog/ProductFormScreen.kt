@@ -13,6 +13,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.miaumarket.data.remote.dto.ProductRequest
+import com.example.miaumarket.ui.components.CatBrandTitle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,7 +52,7 @@ fun ProductFormScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (productId == null) "Nuevo Producto" else "Editar Producto") },
+                title = { CatBrandTitle(title = if (productId == null) "Nuevo producto" else "Editar producto") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")

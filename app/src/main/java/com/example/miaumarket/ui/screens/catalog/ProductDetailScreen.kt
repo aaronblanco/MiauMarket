@@ -8,7 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.miaumarket.R
+import com.example.miaumarket.ui.components.AddToCartCelebrationDialog
+import com.example.miaumarket.ui.components.CatBrandTitle
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +40,13 @@ fun ProductDetailScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    var showAddCelebration by remember { mutableStateOf(false) }
+    var addedProductName by remember { mutableStateOf("") }
+
+    AddToCartCelebrationDialog(
+        visible = showAddCelebration,
+        onDismiss = { showAddCelebration = false }
+    )
 
     LaunchedEffect(productId) {
         viewModel.getProductById(productId)
@@ -46,7 +55,7 @@ fun ProductDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.details_title)) },
+                title = { CatBrandTitle(title = stringResource(R.string.details_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
@@ -114,6 +123,7 @@ fun ProductDetailScreen(
                         Button(
                             onClick = { 
                                 viewModel.addToCart(product)
+                                showAddCelebration = true
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
                                         message = "${product.name} añadido al carrito",
@@ -128,7 +138,7 @@ fun ProductDetailScreen(
                                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         ) {
-                            Icon(Icons.Default.ShoppingCart, contentDescription = null)
+                            Icon(Icons.Default.Pets, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Añadir al carrito")
                         }

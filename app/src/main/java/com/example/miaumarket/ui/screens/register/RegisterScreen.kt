@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.miaumarket.R
 import com.example.miaumarket.ui.AuthState
+import com.example.miaumarket.ui.components.CatBrandTitle
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -122,11 +123,7 @@ fun RegisterContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.displayMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                CatBrandTitle(title = stringResource(R.string.app_name))
 
                 Text(
                     text = stringResource(R.string.join_community),
